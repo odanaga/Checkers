@@ -1,19 +1,19 @@
 {
-    "WindowSize": {
+    "WindowSize": { //Задаётся ширина и высота окна
         "Width": 0,
-        "Hight": 0
+        "Height": 0
     },
-    "Bot": {
-        "IsWhiteBot": false,
-        "IsBlackBot": true,
-        "WhiteBotLevel": 0,
-        "BlackBotLevel": 5,
-        "BotScoringType": "NumberAndPotential",
-        "BotDelayMS": 0,
-        "NoRandom": false,
-        "Optimization": "O1"
+    "Bot": { //Настройки бота
+        "IsWhiteBot": false, //Задаётся цвет бота и игрока
+        "IsBlackBot": true, //...
+        "WhiteBotLevel": 0, //Задаётся глубина просчёта
+        "BlackBotLevel": 5, //...
+        "BotScoringType": "NumberAndPotential", //Задаётся тип определения преимущества бота
+        "BotDelayMS": 0, //Задержка бота перед ходом
+        "NoRandom": false, //Задача рандом у бота
+        "Optimization": "O1" //Задача оптимизации
     },
     "Game": {
-        "MaxNumTurns": 120
+        "MaxNumTurns": 120 //Максимальное количество ходов
     }
 }
