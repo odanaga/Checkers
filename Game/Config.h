@@ -13,13 +13,14 @@ class Config
         reload();
     }
 
-    void reload()
+    void reload() //функция подгрузки настроек
     {
-        std::ifstream fin(project_path + "settings.json");
-        fin >> config;
-        fin.close();
+        std::ifstream fin(project_path + "settings1.json"); //открытие файла
+        fin >> config; //передача данных из файла
+        fin.close(); //закрытие файла
     }
 
+    //данный оператор реализует получение значения настроек, первое значение раздел настроек, второе название настройки
     auto operator()(const string &setting_dir, const string &setting_name) const
     {
         return config[setting_dir][setting_name];
