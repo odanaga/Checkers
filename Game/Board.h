@@ -27,6 +27,7 @@ public:
     // draws start board
     int start_draw()
     {
+        //создание окна и инициализация нужных инструментов для рендера
         if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
         {
             print_exception("SDL_Init can't init SDL2 lib");
@@ -56,6 +57,7 @@ public:
             print_exception("SDL_CreateRenderer can't create renderer");
             return 1;
         }
+        //подгрузка текстур
         board = IMG_LoadTexture(ren, board_path.c_str());
         w_piece = IMG_LoadTexture(ren, piece_white_path.c_str());
         b_piece = IMG_LoadTexture(ren, piece_black_path.c_str());
@@ -74,7 +76,7 @@ public:
         return 0;
     }
 
-    void redraw()
+    void redraw() //перерисовка и сброс значений
     {
         game_results = -1;
         history_mtx.clear();
@@ -84,9 +86,9 @@ public:
         clear_highlight();
     }
 
-    void move_piece(move_pos turn, const int beat_series = 0)
+    void move_piece(move_pos turn, const int beat_series = 0) //движение на шашки на доске
     {
-        if (turn.xb != -1)
+        if (turn.xb != -1)//если есть побитая шашка, то сбрасываем значение
         {
             mtx[turn.xb][turn.yb] = 0;
         }
@@ -95,7 +97,7 @@ public:
 
     void move_piece(const POS_T i, const POS_T j, const POS_T i2, const POS_T j2, const int beat_series = 0)
     {
-        if (mtx[i2][j2])
+        if (mtx[i2][j2])//если почему-то был сделан недоступный ход, то откидываем исключение
         {
             throw runtime_error("final position is not empty, can't move");
         }
@@ -110,27 +112,27 @@ public:
         add_history(beat_series);
     }
 
-    void drop_piece(const POS_T i, const POS_T j)
+    void drop_piece(const POS_T i, const POS_T j)//убираем шашку с доски и перерисовываем
     {
         mtx[i][j] = 0;
         rerender();
     }
 
-    void turn_into_queen(const POS_T i, const POS_T j)
+    void turn_into_queen(const POS_T i, const POS_T j)//делаем дамку
     {
-        if (mtx[i][j] == 0 || mtx[i][j] > 2)
+        if (mtx[i][j] == 0 || mtx[i][j] > 2)//если почему-то совершена попытка сделать дамку на недоступной позиции, откидываем исключение
         {
             throw runtime_error("can't turn into queen in this position");
         }
-        mtx[i][j] += 2;
+        mtx[i][j] += 2; //делаем дамку и перерисовываем
         rerender();
     }
-    vector<vector<POS_T>> get_board() const
+    vector<vector<POS_T>> get_board() const //получение доски
     {
         return mtx;
     }
 
-    void highlight_cells(vector<pair<POS_T, POS_T>> cells)
+    void highlight_cells(vector<pair<POS_T, POS_T>> cells)//подсветка клеток
     {
         for (auto pos : cells)
         {
@@ -140,7 +142,7 @@ public:
         rerender();
     }
 
-    void clear_highlight()
+    void clear_highlight()//очистка подсветки
     {
         for (POS_T i = 0; i < 8; ++i)
         {
@@ -149,26 +151,26 @@ public:
         rerender();
     }
 
-    void set_active(const POS_T x, const POS_T y)
+    void set_active(const POS_T x, const POS_T y)//проставление активной шашки
     {
         active_x = x;
         active_y = y;
         rerender();
     }
 
-    void clear_active()
+    void clear_active()//очистка активной шашки
     {
         active_x = -1;
         active_y = -1;
         rerender();
     }
 
-    bool is_highlighted(const POS_T x, const POS_T y)
+    bool is_highlighted(const POS_T x, const POS_T y)//проверка подсвечена ли уже шашка
     {
         return is_highlighted_[x][y];
     }
 
-    void rollback()
+    void rollback()//откат хода и значений
     {
         auto beat_series = max(1, *(history_beat_series.rbegin()));
         while (beat_series-- && history_mtx.size() > 1)
@@ -181,20 +183,20 @@ public:
         clear_active();
     }
 
-    void show_final(const int res)
+    void show_final(const int res)//отображаем результат игры
     {
         game_results = res;
         rerender();
     }
 
     // use if window size changed
-    void reset_window_size()
+    void reset_window_size()//обновление размера окна
     {
         SDL_GetRendererOutputSize(ren, &W, &H);
         rerender();
     }
 
-    void quit()
+    void quit()//выход, отгрузка текстур и уничтожение окна
     {
         SDL_DestroyTexture(board);
         SDL_DestroyTexture(w_piece);
@@ -215,13 +217,13 @@ public:
     }
 
 private:
-    void add_history(const int beat_series = 0)
+    void add_history(const int beat_series = 0)//история ходов и побитых шашок
     {
         history_mtx.push_back(mtx);
         history_beat_series.push_back(beat_series);
     }
     // function to make start matrix
-    void make_start_mtx()
+    void make_start_mtx()//создаём матрицу ходов
     {
         for (POS_T i = 0; i < 8; ++i)
         {
@@ -238,13 +240,13 @@ private:
     }
 
     // function that re-draw all the textures
-    void rerender()
+    void rerender()//перерисовщик
     {
         // draw board
         SDL_RenderClear(ren);
         SDL_RenderCopy(ren, board, NULL, NULL);
 
-        // draw pieces
+        // draw pieces //отрисовка шашек
         for (POS_T i = 0; i < 8; ++i)
         {
             for (POS_T j = 0; j < 8; ++j)
@@ -269,7 +271,7 @@ private:
             }
         }
 
-        // draw hilight
+        // draw hilight //отрисовка подсветок
         SDL_SetRenderDrawColor(ren, 0, 255, 0, 0);
         const double scale = 2.5;
         SDL_RenderSetScale(ren, scale, scale);
@@ -285,7 +287,7 @@ private:
             }
         }
 
-        // draw active
+        // draw active //отрисовка активной шашки
         if (active_x != -1)
         {
             SDL_SetRenderDrawColor(ren, 255, 0, 0, 0);
@@ -295,13 +297,13 @@ private:
         }
         SDL_RenderSetScale(ren, 1, 1);
 
-        // draw arrows
+        // draw arrows //отрисовка кнопок рестарта и отката хода
         SDL_Rect rect_left{ W / 40, H / 40, W / 15, H / 15 };
         SDL_RenderCopy(ren, back, NULL, &rect_left);
         SDL_Rect replay_rect{ W * 109 / 120, H / 40, W / 15, H / 15 };
         SDL_RenderCopy(ren, replay, NULL, &replay_rect);
 
-        // draw result
+        // draw result //отрисовка в случае окончания игры
         if (game_results != -1)
         {
             string result_path = draw_path;
@@ -327,7 +329,7 @@ private:
         SDL_PollEvent(&windowEvent);
     }
 
-    void print_exception(const string& text) {
+    void print_exception(const string& text) { //пишем логи ошибок
         ofstream fout(project_path + "log.txt", ios_base::app);
         fout << "Error: " << text << ". "<< SDL_GetError() << endl;
         fout.close();

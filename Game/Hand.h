@@ -24,10 +24,10 @@ class Hand
             {
                 switch (windowEvent.type)
                 {
-                case SDL_QUIT:
+                case SDL_QUIT: //выход
                     resp = Response::QUIT;
                     break;
-                case SDL_MOUSEBUTTONDOWN:
+                case SDL_MOUSEBUTTONDOWN: //нажатие мышки внутри окна и возвращение респонса на возможные кнопки
                     x = windowEvent.motion.x;
                     y = windowEvent.motion.y;
                     xc = int(y / (board->H / 10) - 1);
@@ -50,14 +50,14 @@ class Hand
                         yc = -1;
                     }
                     break;
-                case SDL_WINDOWEVENT:
+                case SDL_WINDOWEVENT: //resize event
                     if (windowEvent.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
                     {
                         board->reset_window_size();
                         break;
                     }
                 }
-                if (resp != Response::OK)
+                if (resp != Response::OK) //при получении какого-то конкретного ответа, выходим из общего цикла
                     break;
             }
         }
@@ -68,7 +68,7 @@ class Hand
     {
         SDL_Event windowEvent;
         Response resp = Response::OK;
-        while (true)
+        while (true)// цикл ожидания при окончании игры, обработка событий тут почти такая же, но внутри окна доступна только кнопка рестарта
         {
             if (SDL_PollEvent(&windowEvent))
             {

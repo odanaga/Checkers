@@ -11,9 +11,9 @@
 class Game
 {
   public:
-    Game() : board(config("WindowSize", "Width"), config("WindowSize", "Hight")), hand(&board), logic(&board, &config)
+    Game() : board(config("WindowSize", "Width"), config("WindowSize", "Height")), hand(&board), logic(&board, &config)
     {
-        ofstream fout(project_path + "log.txt", ios_base::trunc);
+        ofstream fout(project_path + "log.txt", ios_base::trunc); //лог файл статистики игры
         fout.close();
     }
 
@@ -21,7 +21,7 @@ class Game
     int play()
     {
         auto start = chrono::steady_clock::now();
-        if (is_replay)
+        if (is_replay) //обработка значения рестарта
         {
             logic = Logic(&board, &config);
             config.reload();
@@ -39,24 +39,24 @@ class Game
         while (++turn_num < Max_turns)
         {
             beat_series = 0;
-            logic.find_turns(turn_num % 2);
+            logic.find_turns(turn_num % 2); //находим доступные ходы
             if (logic.turns.empty())
                 break;
             logic.Max_depth = config("Bot", string((turn_num % 2) ? "Black" : "White") + string("BotLevel"));
-            if (!config("Bot", string("Is") + string((turn_num % 2) ? "Black" : "White") + string("Bot")))
+            if (!config("Bot", string("Is") + string((turn_num % 2) ? "Black" : "White") + string("Bot"))) //определяем чей ход
             {
                 auto resp = player_turn(turn_num % 2);
-                if (resp == Response::QUIT)
+                if (resp == Response::QUIT) //обработка кнопки выхода
                 {
                     is_quit = true;
                     break;
                 }
-                else if (resp == Response::REPLAY)
+                else if (resp == Response::REPLAY) //обработка кнопки рестарта
                 {
                     is_replay = true;
                     break;
                 }
-                else if (resp == Response::BACK)
+                else if (resp == Response::BACK) //обработка кнопки отмены хода
                 {
                     if (config("Bot", string("Is") + string((1 - turn_num % 2) ? "Black" : "White") + string("Bot")) &&
                         !beat_series && board.history_mtx.size() > 2)
@@ -72,7 +72,7 @@ class Game
                     beat_series = 0;
                 }
             }
-            else
+            else //иначе вызова хода бота
                 bot_turn(turn_num % 2);
         }
         auto end = chrono::steady_clock::now();
@@ -80,9 +80,9 @@ class Game
         fout << "Game time: " << (int)chrono::duration<double, milli>(end - start).count() << " millisec\n";
         fout.close();
 
-        if (is_replay)
+        if (is_replay) //на рестарте вызываем функцию игру по новой
             return play();
-        if (is_quit)
+        if (is_quit) //останавливаем программу
             return 0;
         int res = 2;
         if (turn_num == Max_turns)
@@ -110,11 +110,11 @@ class Game
 
         auto delay_ms = config("Bot", "BotDelayMS");
         // new thread for equal delay for each turn
-        thread th(SDL_Delay, delay_ms);
-        auto turns = logic.find_best_turns(color);
+        thread th(SDL_Delay, delay_ms); //задержка перед ходом бота
+        auto turns = logic.find_best_turns(color); //находим лучшие ходы
         th.join();
         bool is_first = true;
-        // making moves
+        // making moves //выполняем ходы
         for (auto turn : turns)
         {
             if (!is_first)
@@ -140,34 +140,34 @@ class Game
         {
             cells.emplace_back(turn.x, turn.y);
         }
-        board.highlight_cells(cells);
+        board.highlight_cells(cells); //подсветка шашек с доступными ходами
         move_pos pos = {-1, -1, -1, -1};
         POS_T x = -1, y = -1;
         // trying to make first move
         while (true)
         {
-            auto resp = hand.get_cell();
-            if (get<0>(resp) != Response::CELL)
+            auto resp = hand.get_cell(); //получаем клик от игрока
+            if (get<0>(resp) != Response::CELL) //если это не выбор клетки, то возвращаем ответ для дальнейшей обработки
                 return get<0>(resp);
             pair<POS_T, POS_T> cell{get<1>(resp), get<2>(resp)};
 
-            bool is_correct = false;
+            bool is_correct = false; //проверка правильности хода или выбора клетки
             for (auto turn : logic.turns)
             {
-                if (turn.x == cell.first && turn.y == cell.second)
+                if (turn.x == cell.first && turn.y == cell.second) //проверяем совпадает ли выбранная клетка с каким-нибудь возможным ходом или шашкой, имеющей ходы
                 {
                     is_correct = true;
                     break;
                 }
-                if (turn == move_pos{x, y, cell.first, cell.second})
+                if (turn == move_pos{x, y, cell.first, cell.second}) //передвижение шашки виртуально
                 {
                     pos = turn;
                     break;
                 }
             }
-            if (pos.x != -1)
+            if (pos.x != -1) //если какой-то ход был сделан, то останавливаем общий цикл выбора хода
                 break;
-            if (!is_correct)
+            if (!is_correct) //если нельзя выбрать, то сбрасываем подсветку клеток в нужное состояние и продолжаем общий цикл
             {
                 if (x != -1)
                 {
@@ -183,7 +183,7 @@ class Game
             y = cell.second;
             board.clear_highlight();
             board.set_active(x, y);
-            vector<pair<POS_T, POS_T>> cells2;
+            vector<pair<POS_T, POS_T>> cells2; //подсветка доступных ходов для выбранной шашки
             for (auto turn : logic.turns)
             {
                 if (turn.x == x && turn.y == y)
@@ -195,18 +195,18 @@ class Game
         }
         board.clear_highlight();
         board.clear_active();
-        board.move_piece(pos, pos.xb != -1);
-        if (pos.xb == -1)
+        board.move_piece(pos, pos.xb != -1); //передвижение шашки на доске
+        if (pos.xb == -1) //если ничего не было побито, то заканчиваем ход
             return Response::OK;
         // continue beating while can
         beat_series = 1;
-        while (true)
+        while (true) //продолжаем серию
         {
             logic.find_turns(pos.x2, pos.y2);
-            if (!logic.have_beats)
+            if (!logic.have_beats) //если нельзя продолжить, то заканчиваем ход
                 break;
 
-            vector<pair<POS_T, POS_T>> cells;
+            vector<pair<POS_T, POS_T>> cells; //подсветка доступных ходов
             for (auto turn : logic.turns)
             {
                 cells.emplace_back(turn.x2, turn.y2);
@@ -216,33 +216,33 @@ class Game
             // trying to make move
             while (true)
             {
-                auto resp = hand.get_cell();
+                auto resp = hand.get_cell(); //получаем инпут от игрока так же, как и раньше
                 if (get<0>(resp) != Response::CELL)
                     return get<0>(resp);
                 pair<POS_T, POS_T> cell{get<1>(resp), get<2>(resp)};
 
-                bool is_correct = false;
+                bool is_correct = false; //проверяем корректность
                 for (auto turn : logic.turns)
                 {
                     if (turn.x2 == cell.first && turn.y2 == cell.second)
                     {
                         is_correct = true;
                         pos = turn;
-                        break;
+                        break; //виртуально передвигаем шашку
                     }
                 }
-                if (!is_correct)
+                if (!is_correct) //продолжение цикла, если игрок попытался сделать недоступный ход пока не будет сделан доступный ход
                     continue;
 
                 board.clear_highlight();
                 board.clear_active();
                 beat_series += 1;
-                board.move_piece(pos, beat_series);
+                board.move_piece(pos, beat_series); //двигаем шашку на доске и заканчиваем ход
                 break;
             }
         }
 
-        return Response::OK;
+        return Response::OK; //заканчиваем ход
     }
 
   private:
