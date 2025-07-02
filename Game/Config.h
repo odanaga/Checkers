@@ -1,4 +1,4 @@
-#pragma once
+п»ї#pragma once
 #include <fstream>
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
@@ -13,14 +13,14 @@ class Config
         reload();
     }
 
-    void reload() //функция подгрузки настроек
+    void reload() //С„СѓРЅРєС†РёСЏ РїРѕРґРіСЂСѓР·РєРё РЅР°СЃС‚СЂРѕРµРє
     {
-        std::ifstream fin(project_path + "settings1.json"); //открытие файла
-        fin >> config; //передача данных из файла
-        fin.close(); //закрытие файла
+        std::ifstream fin(project_path + "settings1.json"); //РѕС‚РєСЂС‹С‚РёРµ С„Р°Р№Р»Р°
+        fin >> config; //РїРµСЂРµРґР°С‡Р° РґР°РЅРЅС‹С… РёР· С„Р°Р№Р»Р°
+        fin.close(); //Р·Р°РєСЂС‹С‚РёРµ С„Р°Р№Р»Р°
     }
 
-    //данный оператор реализует получение значения настроек, первое значение раздел настроек, второе название настройки
+    //РґР°РЅРЅС‹Р№ РѕРїРµСЂР°С‚РѕСЂ СЂРµР°Р»РёР·СѓРµС‚ РїРѕР»СѓС‡РµРЅРёРµ Р·РЅР°С‡РµРЅРёСЏ РЅР°СЃС‚СЂРѕРµРє, РїРµСЂРІРѕРµ Р·РЅР°С‡РµРЅРёРµ СЂР°Р·РґРµР» РЅР°СЃС‚СЂРѕРµРє, РІС‚РѕСЂРѕРµ РЅР°Р·РІР°РЅРёРµ РЅР°СЃС‚СЂРѕР№РєРё
     auto operator()(const string &setting_dir, const string &setting_name) const
     {
         return config[setting_dir][setting_name];
