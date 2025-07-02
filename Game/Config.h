@@ -15,7 +15,7 @@ class Config
 
     void reload() //функция подгрузки настроек
     {
-        std::ifstream fin(project_path + "settings1.json"); //открытие файла
+        std::ifstream fin(project_path + "settings.json"); //открытие файла
         fin >> config; //передача данных из файла
         fin.close(); //закрытие файла
     }
